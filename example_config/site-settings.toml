@@ -1,0 +1,70 @@
+["*"]
+# If enabled, URLs will be replaced in any XML attribute, so long as there is high confidence in the value being a URL.
+# This is enabled by default. If disabled, consider enabling find_urls_in_option_tags, find_urls_in_legacy_background_attributes, and find_urls_additional_src_attributes.
+find_urls_in_all_html_attributes = true
+
+# Find URLs in the <option value>s of HTML.
+find_urls_in_option_tags = false
+
+# Process background attributes in HTML tables. Disable if trying to maximize processing speed.
+find_urls_in_legacy_background_attributes = false
+
+# Additional attributes to treat as src attributes.
+find_urls_additional_src_attributes = []
+
+# If enabled, URLs will be replaced anywhere in the document. Generally overkill, and very inaccurate.
+find_urls_anywhere = false
+
+# If enabled, URLs will be replaced anywhere in the Javascript document, using a slightly more accurate Javascript-specific heuristic than file_urls_anywhere. Generally overkill, and very inaccurate.
+find_urls_suspect_anywhere_in_javascript = false
+
+# If enabled, URLs will be replaced anywhere in Javascript strings.
+find_urls_suspect_anywhere_in_javascript_strings = false
+
+# If enabled, URLs that resemble directories will be replaced anywhere in Javascript strings.
+find_urls_suspect_directories_in_javascript_strings = false
+
+# A list of extensions to recognize when finding URLs. A fully-qualified URL will be detected without these; these are for, e.g., 'attr="index.html"'
+# Empty to disable this behaviour entirely.
+find_urls_with_extensions = [
+    'htm', 'html', 'shtml', 'php', 'asp', 'aspx',
+    'gif', 'jpg', 'jpeg', 'png', 'webp',
+    'mp4', 'mp3', 'webm', 'ogg', 'ogv',
+    'txt', 'rtf', 'doc', 'docx', 'xls', 'xlsx', 'pdf'
+]
+
+# (Unimplemented.) An XPATH selector to select attributes that should be treated as URLs.
+find_urls_extra_xpath_selectors = []
+
+
+# Remove <script> tags and unwrap <noscript> tags.
+deactivate_scripts = false
+
+# Deletes nodes matching xpath selections.
+delete_nodes = []
+
+
+# Simple find-replacements of HTML. A quick-and-dirty solution to some common problems.
+replacements_html_pre = []
+
+# Simple find-replacements of HTML. A quick-and-dirty solution to some common problems.
+replacements_html_post = []
+
+# Simple find-replacements of JS. A quick-and-dirty solution to some common problems.
+replacements_javascript_pre = []
+
+# Simple find-replacements of JS. A quick-and-dirty solution to some common problems.
+replacements_javascript_post = []
+
+# Simple find-replacements of CSS. A quick-and-dirty solution to some common problems.
+replacements_css_pre = []
+
+# Simple find-replacements of CSS. A quick-and-dirty solution to some common problems.
+replacements_css_post = []
+
+
+# Remove comments from Javascript. A decent performance boost with no known consequences.
+javascript_strip_comments = true
+
+
+cookies = ""

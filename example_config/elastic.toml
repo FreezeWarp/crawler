@@ -1,0 +1,3 @@
+clients = ["localhost"]
+scheme = "http"
+port = 9200

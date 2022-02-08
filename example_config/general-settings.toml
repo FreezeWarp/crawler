@@ -1,0 +1,14 @@
+# The directory to find WARCs.
+warc-directory = '/storage/warcs/'
+warc-write-directory = '/storage/warcs/'
+warc-write-rollover-size = 2147483648
+warc-proxy = 'http://localhost:8000'
+
+# The directory to use for caching. For instance, brotli files will be decompressed here.
+cache-directory = '/tmp/crawler'
+
+# How large files in the cache directory may become before we delete the oldest ones.
+cache-cleanup-size = 6442450944
+
+# Above this size, a low-memory usage mode will be used for files. Some functionality won't work for files exceeding this size.
+stream-file-size = 1073741824
