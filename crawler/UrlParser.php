@@ -169,14 +169,20 @@ class UrlParser
     public function getParts()
     {
 
-        return array_merge(
-            $parsed = parse_url($this->url),
+        $parsed = parse_url($this->url);
+
+        $parsed = array_merge(
+            $parsed,
             [
                 'basename' => basename($parsed['path'] ?? ''),
                 'directories' => array_values(array_filter(explode('/', $parsed['path'] ?? ''))),
-                'tlds' => array_values(array_filter(explode('.', $parsed['host'] ?? '')))
+                'tlds' => array_values(array_filter(explode('.', $parsed['host'] ?? ''))),
             ]
         );
+
+        parse_str($parsed['query'], $parsed['query']);
+
+        return $parsed;
 
     }
 

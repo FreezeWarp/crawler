@@ -36,7 +36,6 @@ class HTMLMapper
         if (empty($this->custom_mappings['content_author'])) $mappings['content_author'] = $this->getContentAuthor();
         if (empty($this->custom_mappings['content_date'])) $mappings['content_date'] = $this->getContentDate();
         if (empty($this->custom_mappings['score'])) $mappings['score'] = $this->getScore();
-        if (empty($this->custom_mappings['html_outlinks'])) $mappings['html_outlinks'] = [];
 
         $mappings['schema'] = $this->getSchema();
 
@@ -208,8 +207,12 @@ class HTMLMapper
         return collect($this->crawler->filter('a, link')->links())
             ->map(fn($link) => $link->getUri())
             ->merge(
-                collect($this->crawler->filter('img, video, source, script'))
+                collect($this->crawler->filter('img[src], video[src], source[src], script[src]'))
                     ->map(fn($img) => UriResolver::resolve($img->getAttribute('src'), $this->crawler->getUri()))
+            )
+            ->merge(
+                collect($this->crawler->filter('img[srcset], source[srcset]'))
+                    ->map(fn($img) => UriResolver::resolve($img->getAttribute('srcset'), $this->crawler->getUri()))
             )
             ->unique()
             ->values()

@@ -116,8 +116,8 @@ class WARCWriter
         if (isset(self::$open_target_warcs[$host])) {
             if (ftell(self::$open_target_warcs[$host]) > Helpers::getGeneralSettings()['warc-write-rollover-size']) {
                 Log::info("Previously-opened file is now too large, rolling over");
-                $too_large = true;
                 fclose(self::$open_target_warcs[$host]);
+                unset(self::$open_target_warcs[$host]);
             } else {
                 return self::$open_target_warcs[$host];
             }
@@ -127,9 +127,9 @@ class WARCWriter
          * Find the highest numbered file for the host. If it is below the rollover limit, use it.
          * Otherwise, create a new file that is +1 from the highest numbered file currently existing for the host.
          */
-        if ($existing_file = collect(scandir(Helpers::getGeneralSettings()['warc-write-directory']))
+        /*if ($existing_file = collect(scandir(Helpers::getGeneralSettings()['warc-write-directory']))
             ->filter(fn($f) => Str::startsWith($f, $host . "_") && preg_match("#_\d+\.warc(\.br|)$#", $f))
-            ->sort(SORT_NATURAL)
+            ->sort('natsort')
             ->reverse()
             ->first()) {
             Log::info("Found existing: $existing_file");
@@ -150,18 +150,23 @@ class WARCWriter
                 $next_file = $host . '_' . sprintf("%'.03d", $matches[1] + 1) . '.warc';
                 Log::info("Next file: $next_file");
 
-                return self::$open_target_warcs[$host] = fopen(Helpers::getGeneralSettings()['warc-write-directory'] . "/{$next_file}", "x"); // Open in create mode for safety
+                self::$open_target_warcs[$host] = fopen(Helpers::getGeneralSettings()['warc-write-directory'] . "/{$next_file}", "x"); // Open in create mode for safety
             } else {
-                return self::$open_target_warcs[$host] = fopen($existing_file, "a"); // Open in append mode for safety
+                self::$open_target_warcs[$host] = fopen($existing_file, "a"); // Open in append mode for safety
             }
 
-        }
+        }*/
 
         /*
          * Finally, if no file was found, this is the first time we're writing for the host -- create the 1-numbered file.
          */
-        return self::$open_target_warcs[$host] = fopen(Helpers::getGeneralSettings()['warc-write-directory'] . "/{$host}_001.warc", "x"); // Open in create mode for safety
+        self::$open_target_warcs[$host] = self::$open_target_warcs[$host] ?? fopen(Helpers::getGeneralSettings()['warc-write-directory'] . "/{$host}_" . time() . "_" . uniqid("", true) . ".warc", "x"); // Open in create mode for safety
 
+        if (!self::$open_target_warcs[$host]) {
+            throw new \RuntimeException("Unable to open WARC file.");
+        }
+
+        return self::$open_target_warcs[$host];
     }
 
 }

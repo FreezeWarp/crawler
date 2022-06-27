@@ -11,7 +11,7 @@ use Yosymfony\Toml\Toml;
 class Helpers
 {
     public static function getGeneralSettings() {
-        return self::getOrGenerateCache('general-settings', fn() => Toml::parseFile(__DIR__ . "/../../../storage/app/crawler/general-settings.toml"), 0);
+        return self::getOrGenerateCache('general-settings', fn() => Toml::parseFile(__DIR__ . "/../../../../storage/app/crawler/general-settings.toml"), 0);
     }
 
     public static function getSiteSettings() {
