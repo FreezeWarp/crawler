@@ -42,7 +42,7 @@ class WARCReader
 
     public function readHeaders() {
 
-        Log::debug('WARCReader: reading headers');
+        //Log::debug('WARCReader: reading headers');
 
         $headers = [];
 
@@ -87,13 +87,13 @@ class WARCReader
         $this->body = '';
 
 
-        ////Log::debug("Parsing entry at {$warc_name}@{$entry_position}");
+        //////Log::debug("Parsing entry at {$warc_name}@{$entry_position}");
 
 
         // Skip whitespace.
         while (($warc_header_line = $raw_line = fgets($this->stream)) !== false
             && ($warc_header_line = trim($warc_header_line)) === "") {
-            Log::debug("WARCReader: Skipping whitespace");
+            //Log::debug("WARCReader: Skipping whitespace");
         };
 
         $this->raw_entry .= $raw_line;
@@ -101,7 +101,7 @@ class WARCReader
         // If only whitespace/EOF found, return EOF.
         if ($warc_header_line === false) {
             if (feof($this->stream)) {
-                Log::debug('WARCReader: At EOF');
+                //Log::debug('WARCReader: At EOF');
                 $this->end_of_file = true;
                 return false;
             } else {
@@ -111,19 +111,19 @@ class WARCReader
 
         // In practice, this mostly helps ensure our reading isn't buggy, and our file isn't corrupt.
         if ($warc_header_line !== "WARC/1.0") {
-            throw new \RuntimeException("Invalid section header: [$warc_header_line]. Either your file is corrupt or your stream is currently positioned in the middle of an entry.");
+            throw new \RuntimeException("Invalid section header: [$warc_header_line]. Either your file is corrupt or your stream is currently positioned in the middle of an entry. Current position is " . ftell($this->stream));
         }
 
 
         // Read each WARC header sequentially. Perform basic parsing by splitting on :.
         $warc_headers = $this->readHeaders();
-        ////Log::debug("Parsed WARC headers: " . print_r($warc_headers, true));
+        //////Log::debug("Parsed WARC headers: " . print_r($warc_headers, true));
 
         // These fields are required.
         if (!isset($warc_headers['WARC-Type']))
             throw new \RuntimeException("No WARC-Type header set in block.");
         if (!isset($warc_headers['Content-Length']))
-            throw new \RuntimeException("No Content-Length header set in block.");
+            throw new \RuntimeException("No Content-Length header set in block. Headers were: " . print_r($warc_headers, true));
 
         if ($warc_headers['WARC-Type'] === 'response' && !isset($warc_headers['Content-Type']))
             throw new \RuntimeException('No Content-Type header set in block.');
@@ -146,22 +146,22 @@ class WARCReader
                 while (($http_header_line = $raw_http_line = fgets($this->stream)) !== false
                     && ($http_header_line = trim($http_header_line)) === "");
 
-                Log::info("Read HTTP header line: $http_header_line");
+                //Log::info("Read HTTP header line: $http_header_line");
 
                 $this->raw_entry .= $raw_http_line;
             }
 
             // In practice, this mostly helps ensure our reading isn't buggy, and our file isn't corrupt.
             if (!Str::startsWith($http_header_line, "HTTP/")) {
-                throw new \RuntimeException("Invalid HTTP section header: [$http_header_line]. Either your file is corrupt or your stream is currently positioned in the middle of an entry.");
+                throw new \RuntimeException("Invalid HTTP section header: [$http_header_line]. Either your file is corrupt or your stream is currently positioned in the middle of an entry. Current position is " . ftell($this->stream));
             }
 
             if (!$http_headers = $this->readHeaders()) {
-                Log::warning("Failed to read HTTP headers.");
+                //Log::warning("Failed to read HTTP headers.");
             }
 
 
-            Log::debug("WARCReader: Open memory space for HTTP read...");
+            //Log::debug("WARCReader: Open memory space for HTTP read...");
             $tmp_file = fopen('php://temp', 'x+');
             $content_length = $warc_headers['Content-Length'] - (ftell($this->stream) - $before_http_position);
 
@@ -172,16 +172,16 @@ class WARCReader
                     throw new \RuntimeException("Failed to read any data from body, requested $requested_read_size, result was " . print_r($read, true) . ".");
                 }
 
-                Log::debug('Read ' . strlen($read) . " bytes, out of {$warc_headers['Content-Length']} total.");
+                //Log::debug('Read ' . strlen($read) . " bytes, out of {$warc_headers['Content-Length']} total.");
 
                 $bytes_read += strlen($read);
                 fwrite($tmp_file, $read);
             }
 
-            Log::debug("WARCReader: Wrote memory space...");
+            //Log::debug("WARCReader: Wrote memory space...");
 
-            //////Log::info("Obtained body, length: " . $bytes_read);
-            //Log::info('Read HTTP status code: ' . $http_header_line);
+            ////////Log::info("Obtained body, length: " . $bytes_read);
+            ////Log::info('Read HTTP status code: ' . $http_header_line);
 
             $status_code = explode(' ', $http_header_line)[1];
             if ($status_code < 300 && $status_code > 208) $status_code = 200;
@@ -189,7 +189,7 @@ class WARCReader
             if ($status_code < 500 && $status_code > 417) $status_code = 400;
             else if ($status_code > 511 || $status_code == 509) $status_code = 500;
 
-            Log::debug("Creating HTTP entry with status $status_code");
+            //Log::debug("Creating HTTP entry with status $status_code");
 
             //$this->raw_entry = new WARCEntry(response($tmp_file, $http_headers), $warc_headers);
             $message = new \http\Message;
@@ -202,7 +202,7 @@ class WARCReader
 
         } else {
 
-            Log::debug("WARCReader: Open memory space for non-HTTP read...");
+            //Log::debug("WARCReader: Open memory space for non-HTTP read...");
             $tmp_file = fopen('php://temp', 'r+');
 
             // Read the entire body using the Content-Length parameter's value.
@@ -210,7 +210,7 @@ class WARCReader
                 $bytes_to_read = (int) $warc_headers['Content-Length'] - $bytes_read;
                 $read = fread($this->stream, (int) $warc_headers['Content-Length'] - $bytes_read);
 
-                Log::debug('Read ' . strlen($read) . " bytes, out of {$warc_headers['Content-Length']} total.");
+                //Log::debug('Read ' . strlen($read) . " bytes, out of {$warc_headers['Content-Length']} total.");
 
                 if ($read === false || strlen($read) === 0) {
                     throw new \RuntimeException("Failed to read any data. Requested $bytes_to_read, read $bytes_read successfully so far");
@@ -220,7 +220,7 @@ class WARCReader
                 fwrite($tmp_file, $read);
             }
 
-            Log::debug("WARCReader: Wrote memory space...");
+            //Log::debug("WARCReader: Wrote memory space...");
 
             $this->raw_entry .= $this->body;
 
@@ -228,7 +228,7 @@ class WARCReader
                 throw new \RuntimeException("Read body did not match Content-Length.");
             }
 
-            ////Log::debug("Obtained body, length: " . $bytes_read);
+            //////Log::debug("Obtained body, length: " . $bytes_read);
 
             $this->last_entry = new WARCEntry(WARCEntry::MODE_STRING, $warc_headers, null, $tmp_file, $warc_name, $entry_position, ftell($this->stream) - $entry_position);
 

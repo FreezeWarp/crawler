@@ -76,12 +76,12 @@ class FileResolver
 
             if (file_exists($this->path)) {
 
-                Log::info("File exists, skipping glob resolution");
+                //Log::info("File exists, skipping glob resolution");
                 $this->resolved_path = $this->path;
 
             } else {
 
-                Log::info("File does not exist, using glob resolution");
+                //Log::info("File does not exist, using glob resolution");
 
                 $candidates = glob(Helpers::getGeneralSettings()['warc-directory'] . '/' . $this->path)
                     ?: glob(Helpers::getGeneralSettings()['warc-directory'] . '/' . $this->path . '.br')
@@ -112,7 +112,7 @@ class FileResolver
 
                 if (!file_exists($tmp_file = Helpers::getGeneralSettings()['cache-directory'] . '/' . preg_replace("/\.br$/", "", basename($this->getResolvedFilePath())))) {
 
-                    Log::info("File is br encoded, decompressing...");
+                    //Log::info("File is br encoded, decompressing...");
 
                     $brotli = shell_exec("brotli -d -n -o " . escapeshellarg($tmp_file) . " " . escapeshellarg($this->getResolvedFilePath()));
 
@@ -122,7 +122,7 @@ class FileResolver
 
                     $files = glob(Helpers::getGeneralSettings()['cache-directory'] . '/*.warc');
                     $total_size = collect($files)->map(fn($f) => filesize($f))->sum();
-                    Log::info("Total size of warc files in cache directory: $total_size");
+                    //Log::info("Total size of warc files in cache directory: $total_size");
                     if ($total_size > Helpers::getGeneralSettings()['cache-cleanup-size']) {
                         $oldest_files = collect($files)->sort(fn($file1, $file2) => filemtime($file2) - filemtime($file1));
                         Log::info("WARC cache is too large, deleting old files: " . $oldest_files->implode(", "));
@@ -167,10 +167,11 @@ class FileResolver
         );*/
 
         if ($seek_to) {
-            \Elastic\APM\ElasticApm::getCurrentTransaction()->captureChildSpan(
+            fseek($stream, $seek_to);
+            /*\Elastic\APM\ElasticApm::getCurrentTransaction()->captureChildSpan(
                 'FileResolver::openAsWARC::fseek', 'filesystem',
                 fn($span) => fseek($stream, $seek_to)
-            );
+            );*/
         }
 
         return $stream;
