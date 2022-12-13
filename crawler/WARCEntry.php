@@ -11,17 +11,17 @@ use Symfony\Component\DomCrawler\Crawler;
 class WARCEntry
 {
 
-    private $mode;
-    private $headers;
+    protected $mode;
+    protected $headers;
     /** @var \http\Message */
-    private $subheaders;
-    private $body;
-    private $elastic_data;
-    private $attached_entries = [];
-    private $source_file;
-    private $source_position;
-    private $source_length;
-    private $temporary_files = [];
+    protected $subheaders;
+    protected $body;
+    protected $elastic_data;
+    protected $attached_entries = [];
+    protected $source_file;
+    protected $source_position;
+    protected $source_length;
+    protected $temporary_files = [];
 
     public const HTTP_RESPONSE_TYPE = ['application/http; msgtype=response', 'application/http;msgtype=response'];
     //const HTTP_RESPONSE_TYPE = 'application/http; msgtype=response';
