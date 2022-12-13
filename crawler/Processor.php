@@ -97,12 +97,6 @@ class Processor {
 
         if ($type) {
             $this->requestedType = $type;
-
-            $this->setContentType([
-                'css' => 'text/css',
-                'js' => 'text/javascript',
-                'html' => 'text/html'
-            ][$type] ?? null);
         }
     }
 
@@ -119,10 +113,28 @@ class Processor {
      */
     public function getContentType() {
 
+        // The type can be overridden by the requestedType. For instance, a stylesheet used by a <link rel> will always be interpreted as text/css if you provide the appropriate requested type this way.
+        // However, you generally should omit and trust the server in most cases.
+        if ($this->requestedType) {
+            return [
+                'css' => 'text/css',
+                'js' => 'text/javascript',
+                'html' => 'text/html'
+            ][$this->requestedType];
+        }
+
+        // This is also basically an override. Ideally, don't use this either.
         if ($this->contentType) {
             return $this->contentType;
         }
 
+        // Normally, we'll have the content type via the WARC.
+        if ($this->entry->getContentType()) {
+            return $this->entry->getContentType();
+        }
+
+        // And if all else fails, we'll detect the content type automatically.
+        // This mainly only detects HTML right now.
         try {
             $stream = $this->entry->getDecodedBody();
             fseek($stream, 0);
@@ -135,7 +147,7 @@ class Processor {
         if (preg_match('/^(\s|\xEF|\xBB|\xBF)*(\<\!\-\-|\<\!DOCTYPE|\<html|\<head)/i', $peek)) {
             return 'text/html';
         } else {
-            return $this->entry->getContentType();
+            return 'application/octet-stream';
         }
 
     }
@@ -293,14 +305,7 @@ class Processor {
 
                 }
 
-                $r = response($contents)
-                    ->header('Content-Type', $this->getContentType());
-
-                if ($this->entry->getSiteConfig()['cookies']) {
-                    $r->header('Set-Cookie', $this->entry->getSiteConfig()['cookies'] ?? '');
-                }
-
-                return $r;
+                return $contents;
 
             }, 0);
 
