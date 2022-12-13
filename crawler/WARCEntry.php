@@ -117,6 +117,7 @@ class WARCEntry
     }
 
     public function getDecodedBody() {
+
         $body = $this->getBody();
 
         if ($this->isHttp() && $this->subheaders->getHeader('Transfer-Encoding') === 'chunked') {
@@ -165,7 +166,15 @@ class WARCEntry
             $body = $decompressed_stream;
         }
 
+        if (!is_resource($body)) {
+            $body2 = fopen('php://memory', 'r+');
+            fwrite($body2, $body);
+            rewind($body2);
+            $body = $body2;
+        }
+
         return $body;
+
     }
 
     public function getElasticData() {
