@@ -697,12 +697,14 @@ class Processor {
             }
         }
 
+
+        $contents = $doc->saveHTML(); // Return the updated data.
+
         foreach ($this->entry->getSiteConfig()['replacements_html_post'] AS $find => $replace) {
             $contents = str_replace($find, $replace, $contents);
         }
 
-
-        return $doc->saveHTML(); // Return the updated data.
+        return $contents;
     }
 
 
